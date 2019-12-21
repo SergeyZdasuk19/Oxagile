@@ -1,98 +1,134 @@
 package by.oxagile.pages;
 
 import by.oxagile.driver.DriverSingleton;
+import by.oxagile.entity.TodoTO;
+import by.oxagile.locator.MainPageLoc;
+import lombok.extern.log4j.Log4j;
 import org.openqa.selenium.Keys;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 import org.testng.Assert;
 
 import java.util.List;
+import java.util.Objects;
 
-import static by.oxagile.services.WaitEl.$findEls;
-import static by.oxagile.services.WaitEl.$visibility;
+import static by.oxagile.services.FinderEl.$findEls;
+import static by.oxagile.services.WaitEl.*;
 
-public class MainPage {
-    private static final String inputTodos = "input[class='new-todo']";
-    private static final String liAllRecords = "ul[class='todo-list'] li";
-    private static final String liCompletedRecords = "ul[class='todo-list'] li[class='completed']";
-    private static final String emptyCheckbox = "li[class=''] input[class='toggle']";
-    private static final String buttonCompleted = "a[href$='completed']";
-    private static final String buttonActive = "a[href$='active']";
-    private static final String amountRecordsSection = "span[class='todo-count'] strong";
-    private static final String buttonAll = "ul[class='filters'] li a";
-    private static final String buttonnDestroy = "button[class='destroy']";
-    private static final String buttonClearRecords = "button[class='clear-completed']";
+@Log4j
+public class MainPage implements MainPageLoc {
 
-    public MainPage addRecord(String record) {
-        $visibility(inputTodos).sendKeys(record);
-        $visibility(inputTodos).sendKeys(Keys.ENTER);
+    private MainPage() {
+
+    }
+
+    public static MainPage load() {
+        Assert.assertEquals($visibility(header).getText(), "todos");
+        log.info("Go to main page http://todomvc.com/examples/vanillajs/ ");
+        return new MainPage();
+    }
+
+    public MainPage addRecord(TodoTO record) {
+        Assert.assertTrue($visibility(inputTodo).isEnabled(), "input for add is not displayed");
+        $visibility(inputTodo).sendKeys(record.getTodo());
+        $visibility(inputTodo).sendKeys(Keys.ENTER);
+        log.info("Add some record " + record.getTodo());
         return this;
     }
 
-    public MainPage addRecords(List<String> recordsList) {
+    public MainPage addRecords(List<TodoTO> recordsList) {
         recordsList.stream().forEach(n -> addRecord(n));
         return this;
     }
 
-    public MainPage completeRecord(int index) {
-        $findEls(emptyCheckbox).get(index).click();
+    public MainPage completeFirstRecord() {
+        WebElement element = Objects.requireNonNull(
+                $findEls(emptyCheckbox)
+                        .stream()
+                        .findFirst()
+                        .orElse(null));
+        element.click();
+        log.info("First record " + element.getText() + " was completed");
+        return this;
+    }
+
+    public MainPage completeAllRecord() {
+        Assert.assertTrue($visibility(completeAllRecords).isEnabled(),
+                "label for complete all record is not displayed");
+        $visibility(completeAllRecords).click();
+        log.info("All records were completed");
         return this;
     }
 
     public MainPage selectActive() {
+        Assert.assertTrue($visibility(buttonActive).isEnabled(),
+                "button active is not displayed");
         $visibility(buttonActive).click();
+        Assert.assertTrue($selectButton(buttonActive),
+                "button active is not selected");
+        Assert.assertEquals($visibility(buttonActive).getAttribute("class"), "selected");
+        log.info("Button Active is selected");
         return this;
     }
 
     public MainPage selectCompleted() {
+        Assert.assertTrue($visibility(buttonCompleted).isEnabled(),
+                "button completed is not displayed");
         $visibility(buttonCompleted).click();
+        Assert.assertTrue($selectButton(buttonCompleted),
+                "button completed is not selected");
+        Assert.assertEquals($visibility(buttonCompleted).getAttribute("class"), "selected");
         return this;
     }
 
     public MainPage selectAll() {
+        Assert.assertTrue($visibility(buttonAll).isEnabled(), "button all in not displayed");
         $visibility(buttonAll).click();
+        Assert.assertTrue($selectButton(buttonAll),
+                "button completed is not selected");
+        log.info("Button All is selected");
         return this;
     }
 
-    public int getAmountAllRecords() {
-        return $findEls(liAllRecords).size();
+    public MainPage deleteFirstRecord() {
+        new Actions(DriverSingleton.getDriver())
+                .moveToElement(
+                        Objects.requireNonNull($findEls(liAllRecords)
+                                .stream()
+                                .findFirst()
+                                .orElse(null)))
+                .perform();
+        $visibility(buttonDestroy).click();
+        log.info("Delete first record");
+        return this;
     }
 
-    public MainPage deleteRecord(int index) {
+    public MainPage editFirstRecord(List<TodoTO> newRecords) {
         new Actions(DriverSingleton.getDriver())
-                .moveToElement($findEls(liAllRecords).get(index))
+                .moveToElement(
+                        Objects.requireNonNull($findEls(liAllRecords)
+                                .stream()
+                                .findFirst()
+                                .orElse(null)))
+                .doubleClick()
+                .doubleClick()
+                .sendKeys(
+                        newRecords
+                                .stream()
+                                .findFirst()
+                                .orElse(null)
+                                .getTodo())
+                .sendKeys(Keys.ENTER)
                 .perform();
-        $visibility(buttonnDestroy).click();
+        log.info("Edit first record");
         return this;
     }
 
     public MainPage clearCompletedRecords() {
+        Assert.assertTrue($visibility(buttonClearRecords).isEnabled(),
+                "button is not displayed");
         $visibility(buttonClearRecords).click();
-        return this;
-    }
-
-    public MainPage assertAmountRecords(List<String> recordsList) {
-        Assert.assertEquals($findEls(liAllRecords).size(), recordsList.size());
-        return this;
-    }
-
-    public MainPage assertActiveAmountRecords() {
-        Assert.assertEquals($findEls(liAllRecords).size(), getAmountAllRecords());
-        return this;
-    }
-
-    public MainPage assertCompletedAmountRecords(int amountRecord) {
-        Assert.assertEquals(amountRecord - Integer.parseInt($visibility(amountRecordsSection).getText()),
-                $findEls(liCompletedRecords).size());
-        return this;
-    }
-
-    public MainPage assertAmountRecordsAfterDeleteOneRecord(int amountRecord) {
-        Assert.assertEquals(amountRecord - 1, Integer.parseInt($visibility(amountRecordsSection).getText()));
-        return this;
-    }
-
-    public MainPage assertAmountRecordsAfterClear() {
-        Assert.assertEquals($findEls(liCompletedRecords).size(), 0);
+        log.info("Button Clear completed is selected");
         return this;
     }
 }

@@ -6,8 +6,6 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-import java.util.List;
-
 public class WaitEl {
     private static final int WAIT_TIMEOUT_SECONDS = 15;
     private static final int WAIT_TIMEOUT_M_SECONDS = 1000;
@@ -18,10 +16,15 @@ public class WaitEl {
                 .until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(by)));
     }
 
-    public static List<WebElement> $findEls(String by) {
-        return DriverSingleton
-                .getDriver()
-                .findElements(By.cssSelector(by));
+    public static WebElement $clickable(String by) {
+        return new WebDriverWait(DriverSingleton.getDriver(), WAIT_TIMEOUT_SECONDS, WAIT_TIMEOUT_M_SECONDS)
+                .until(ExpectedConditions.elementToBeClickable(By.cssSelector(by)));
+    }
+
+    public static boolean $selectButton(String by) {
+        return new WebDriverWait(DriverSingleton.getDriver(), WAIT_TIMEOUT_SECONDS)
+                .until(ExpectedConditions
+                        .attributeContains(By.cssSelector(by), "class", "selected"));
     }
 
 }

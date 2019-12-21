@@ -1,9 +1,13 @@
 package by.oxagile.tests;
 
 import by.oxagile.driver.DriverSingleton;
+import by.oxagile.pages.MainPage;
+import lombok.extern.log4j.Log4j;
 import org.testng.annotations.AfterClass;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 
+@Log4j
 public abstract class Common {
     @BeforeClass()
     public void setUp() {
@@ -15,4 +19,12 @@ public abstract class Common {
         DriverSingleton.closeDriver();
     }
 
+    @AfterMethod()
+    public void clearAllRecords() {
+        MainPage.load()
+                .selectAll()
+                .completeAllRecord()
+                .clearCompletedRecords();
+        log.info("=====================================================");
+    }
 }

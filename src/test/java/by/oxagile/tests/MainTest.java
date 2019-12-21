@@ -1,5 +1,7 @@
 package by.oxagile.tests;
 
+import by.oxagile.asserts.AssertTodo;
+import by.oxagile.entity.TodoTO;
 import by.oxagile.pages.MainPage;
 import org.testng.annotations.Test;
 
@@ -8,78 +10,102 @@ import java.util.List;
 public class MainTest extends Common {
 
     @Test(
-            description = "Добавить записи",
-            dataProvider = "C1AddRecords",
+            description = "Проверить данные на точность посл добавления записи, " +
+                    "соответствует ли число активных todo с числом items left",
+            dataProvider = "C1",
             dataProviderClass = DataProviders.class)
-    public void addSomeRecords(List<String> records) {
-        new MainPage()
-                .addRecords(records)
-                .assertAmountRecords(records);
+    public void addSomeRecords(List<TodoTO> actual) {
+        MainPage.load()
+                .addRecords(actual)
+                .selectActive();
+        new AssertTodo()
+                .assertAllRecords(actual)
+                .assertActiveAmountRecords(actual);
     }
 
     @Test(
-            description = "Показать активные записи",
-            dataProvider = "C2DeleteRecord",
+            description = "Проверить данные на точность после выполнения первой записи, " +
+                    "соответствует ли число активных todo с числом items left",
+            dataProvider = "C2",
             dataProviderClass = DataProviders.class)
-    public void showActiveRecords(List<String> records,
-                                  int index) {
-        new MainPage()
+    public void markFirstRecordWithStatusAllRecords(List<TodoTO> actual) {
+        MainPage.load()
+                .addRecords(actual)
+                .selectAll()
+                .completeFirstRecord();
+        new AssertTodo()
+                .assertAllRecords(actual)
+                .assertActiveAmountRecords(actual);
+    }
+
+    @Test(
+            description = "Проверить выполненные записи на точность",
+            dataProvider = "C2",
+            dataProviderClass = DataProviders.class)
+    public void markFirstRecordWithStatusCompletedRecords(List<TodoTO> records) {
+        MainPage.load()
                 .addRecords(records)
                 .selectAll()
-                .completeRecord(index)
+                .completeFirstRecord()
+                .selectCompleted();
+        new AssertTodo().assertCompletedRecords(records);
+
+
+    }
+
+    @Test(
+            description = "удаленение первой активной записи, проверить записи на точность после удаления",
+            dataProvider = "C1",
+            dataProviderClass = DataProviders.class
+    )
+    public void deleteFirstActiveRecord(List<TodoTO> records) {
+        MainPage.load()
+                .addRecords(records)
                 .selectActive()
-                .assertActiveAmountRecords();
+                .deleteFirstRecord();
+        new AssertTodo().assertAllRecordsAfterDelete(records);
     }
 
     @Test(
-            description = "Показать выполненные записи",
-            dataProvider = "C2DeleteRecord",
-            dataProviderClass = DataProviders.class)
-    public void showCompletedRecords(List<String> records,
-                                     int index) {
-        MainPage mainPage = new MainPage();
-        mainPage
-                .addRecords(records)
-                .selectAll();
-        int amount = mainPage.getAmountAllRecords();
-        mainPage
-                .completeRecord(index)
-                .selectCompleted()
-                .assertCompletedAmountRecords(amount);
-    }
-
-    @Test(
-            description = "Удаление записи",
-            dataProvider = "C2DeleteRecord",
+            description = "удаленение первой выполненной записи, проверить записи на точность после удаления",
+            dataProvider = "C2",
             dataProviderClass = DataProviders.class
     )
-    public void deleteOneRecord(List<String> records,
-                                int index) {
-        MainPage mainPage = new MainPage();
-        mainPage
+    public void deleteFirstCompletedRecord(List<TodoTO> records) {
+        MainPage.load()
                 .addRecords(records)
+                .completeFirstRecord()
+                .selectCompleted()
+                .deleteFirstRecord()
                 .selectAll();
-        int amount = mainPage.getAmountAllRecords();
-        mainPage
-                .deleteRecord(index)
-                .assertAmountRecordsAfterDeleteOneRecord(amount);
+        new AssertTodo().assertAllRecordsAfterDelete(records);
     }
 
     @Test(
-            description = "Удаление выполненных записей",
-            dataProvider = "C2DeleteRecord",
+            description = "редактирирование первой активной записи,проверить записи на точность после удаления",
+            dataProvider = "C3",
             dataProviderClass = DataProviders.class
     )
-    public void deleteСompletedRecord(List<String> records,
-                                      int index) {
-        MainPage mainPage = new MainPage();
-        mainPage
-                .addRecords(records)
-                .selectAll();
-        mainPage
-                .completeRecord(index)
-                .selectCompleted()
-                .clearCompletedRecords()
-                .assertAmountRecordsAfterClear();
+    public void editFirstActiveRecord(List<TodoTO> oldRecords,
+                                      List<TodoTO> newRecords) {
+        MainPage.load()
+                .addRecords(oldRecords)
+                .editFirstRecord(newRecords);
+        new AssertTodo().assertAllRecordsAfterEdit(newRecords);
+    }
+
+    @Test(
+            description = "редактирирование первой выполненной записи,проверить записи на точность после удаления",
+            dataProvider = "C4",
+            dataProviderClass = DataProviders.class
+    )
+    public void editFirstCompletedRecord(List<TodoTO> oldRecords,
+                                         List<TodoTO> newRecords) {
+        MainPage.load()
+                .addRecords(oldRecords)
+                .completeFirstRecord()
+                .selectAll()
+                .editFirstRecord(newRecords);
+        new AssertTodo().assertAllRecordsAfterEdit(newRecords);
     }
 }
