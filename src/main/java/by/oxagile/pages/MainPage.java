@@ -2,6 +2,7 @@ package by.oxagile.pages;
 
 import by.oxagile.driver.DriverSingleton;
 import by.oxagile.entity.TodoTO;
+import by.oxagile.exception.RecordException;
 import by.oxagile.locator.MainPageLoc;
 import lombok.extern.log4j.Log4j;
 import org.openqa.selenium.Keys;
@@ -46,7 +47,7 @@ public class MainPage implements MainPageLoc {
                 $findEls(emptyCheckbox)
                         .stream()
                         .findFirst()
-                        .orElse(null));
+                        .orElseThrow(() -> new RecordException("Not found first record for complete")));
         element.click();
         log.info("First record " + element.getText() + " was completed");
         return this;
@@ -96,7 +97,7 @@ public class MainPage implements MainPageLoc {
                         Objects.requireNonNull($findEls(liAllRecords)
                                 .stream()
                                 .findFirst()
-                                .orElse(null)))
+                                .orElseThrow(() -> new RecordException("Not found first record for delete"))))
                 .perform();
         $visibility(buttonDestroy).click();
         log.info("Delete first record");
@@ -109,14 +110,14 @@ public class MainPage implements MainPageLoc {
                         Objects.requireNonNull($findEls(liAllRecords)
                                 .stream()
                                 .findFirst()
-                                .orElse(null)))
+                                .orElseThrow(() -> new RecordException("Not found first record for edit"))))
                 .doubleClick()
                 .doubleClick()
                 .sendKeys(
                         newRecords
                                 .stream()
                                 .findFirst()
-                                .orElse(null)
+                                .orElseThrow(() -> new RecordException("Not found first record for edit"))
                                 .getTodo())
                 .sendKeys(Keys.ENTER)
                 .perform();
