@@ -54,7 +54,7 @@ public class MainTest extends Common {
     }
 
     @Test(
-            description = "удаленение первой активной записи, проверить записи на точность после удаления",
+            description = "Удаленение первой активной записи, проверить записи на точность после удаления",
             dataProvider = "C1",
             dataProviderClass = DataProviders.class
     )
@@ -67,7 +67,7 @@ public class MainTest extends Common {
     }
 
     @Test(
-            description = "удаленение первой выполненной записи, проверить записи на точность после удаления",
+            description = "Удаленение первой выполненной записи, проверить записи на точность после удаления",
             dataProvider = "C2",
             dataProviderClass = DataProviders.class
     )
@@ -82,7 +82,7 @@ public class MainTest extends Common {
     }
 
     @Test(
-            description = "редактирирование первой активной записи,проверить записи на точность после удаления",
+            description = "Редактирирование первой активной записи,проверить записи на точность после редактирования",
             dataProvider = "C3",
             dataProviderClass = DataProviders.class
     )
@@ -95,7 +95,7 @@ public class MainTest extends Common {
     }
 
     @Test(
-            description = "редактирирование первой выполненной записи,проверить записи на точность после удаления",
+            description = "Редактирирование первой выполненной записи,проверить записи на точность после редактирования",
             dataProvider = "C4",
             dataProviderClass = DataProviders.class
     )
